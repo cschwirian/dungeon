@@ -5,10 +5,10 @@ from tkinter.ttk import Frame, Button, Style, Entry
 from pynput.keyboard import Key, Listener
 
 BLANK_SPACE = "_"
-DUNGEON_WIDTH = 10
-DUNGEON_HEIGHT = 10
-CELL_WIDTH = 80
-CELL_HEIGHT = 80
+DUNGEON_WIDTH = 20
+DUNGEON_HEIGHT = 15
+CELL_WIDTH = 40
+CELL_HEIGHT = 40
 
 class Dungeon:
 
@@ -59,8 +59,10 @@ class Game( Frame ):
         #self.after( 60, self.tick() )
         self.bind_all( "<Key>", self.on_press )
 
-    def place_UI( self ):
+        self.player_x = 0;
+        self.player_y = 0;
 
+    def place_UI( self ):
         # Menu
         menu = Menu( self.master )
         self.master.config( menu=menu )
@@ -104,11 +106,12 @@ class Game( Frame ):
                     self.canvas.create_line( cell * CELL_WIDTH + CELL_WIDTH, row * CELL_HEIGHT, cell * CELL_WIDTH + CELL_WIDTH, row * CELL_HEIGHT + CELL_HEIGHT )
                     self.canvas.create_line( cell * CELL_WIDTH, row * CELL_HEIGHT + CELL_HEIGHT, cell * CELL_WIDTH + CELL_WIDTH, row * CELL_HEIGHT + CELL_HEIGHT )
 
-        self.canvas.create_line( 20, 20, 60, 20, tag="square" )
-        self.canvas.create_line( 20, 20, 20, 60, tag="square" )
-        self.canvas.create_line( 60, 20, 60, 60, tag="square" )
-        self.canvas.create_line( 20, 60, 60, 60, tag="square" )
+        self.canvas.create_line( 10, 10, 30, 10, tag="square" )
+        self.canvas.create_line( 10, 10, 10, 30, tag="square" )
+        self.canvas.create_line( 30, 10, 30, 30, tag="square" )
+        self.canvas.create_line( 10, 30, 30, 30, tag="square" )
 
+    # Eventually will allow the player to load a save.
     def open_file( self ):
         file_types = [ ("Text files", "*.txt"), ("All files", "*") ]
         dialog = filedialog.Open( self, filetypes=file_types )
@@ -118,6 +121,7 @@ class Game( Frame ):
             with open( filename, "r" ) as file:
                 self.text.insert( END, file.read() )
 
+    # Centers the window and sets the resolution.
     def center_window( self ):
         width = 800
         height = 600
@@ -130,6 +134,7 @@ class Game( Frame ):
 
         self.master.geometry( "%dx%d+%d+%d" % (width, height, x_offset, y_offset) )
 
+    # Will
     def draw_dungeon( self ):
         grid = self.dungeon.get_grid()
         for row in range( len( grid ) ):
@@ -166,22 +171,47 @@ class Game( Frame ):
         key = key_object.keysym
 
         if( key == "Left" ):
+            if( self.player_x == 0 ):
+                return
             for line in self.canvas.find_withtag( "square" ):
                 self.canvas.move( line, -CELL_WIDTH, 0 )
+            self.player_x -= 1
+            self.text.insert( END, "_" )
+            self.text.delete( "0.0", END )
+            self.text.insert( END, "Moved left." )
         elif( key == "Right" ):
+            if( self.player_x == DUNGEON_WIDTH - 1 ):
+                return
             for line in self.canvas.find_withtag( "square" ):
                 self.canvas.move( line, CELL_WIDTH, 0 )
+            self.player_x += 1
+            self.text.insert( END, "_" )
+            self.text.delete( "0.0", END )
+            self.text.insert( END, "Moved right." )
         elif( key == "Up" ):
+            if( self.player_y == 0 ):
+                return
             for line in self.canvas.find_withtag( "square" ):
                 self.canvas.move( line, 0, -CELL_HEIGHT )
+            self.player_y -= 1
+            self.text.insert( END, "_" )
+            self.text.delete( "0.0", END )
+            self.text.insert( END, "Moved up." )
         elif( key == "Down" ):
+            if( self.player_y == DUNGEON_HEIGHT - 1 ):
+                return
             for line in self.canvas.find_withtag( "square" ):
                 self.canvas.move( line, 0, CELL_HEIGHT )
+            self.player_y += 1
+            self.text.insert( END, "_" )
+            self.text.delete( "0.0", END )
+            self.text.insert( END, "Moved down." )
 
 
 
 def main():
     root = Tk()
+    root.resizable( width=False, height=False )
     game = Game()
     game.start()
     game.run()
